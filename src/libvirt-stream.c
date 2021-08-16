@@ -51,7 +51,7 @@ VIR_LOG_INIT("libvirt.stream");
  */
 virStreamPtr
 virStreamNew(virConnectPtr conn,
-             unsigned int flags)
+             virStreamFlags flags)
 {
     virStreamPtr st;
 

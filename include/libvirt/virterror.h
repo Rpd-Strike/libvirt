@@ -138,6 +138,7 @@ typedef enum {
     VIR_FROM_BPF = 71,          /* Error from BPF code */
     VIR_FROM_CH = 72,           /* Error from Cloud-Hypervisor driver */
 
+    VIR_FROM_FC = 73,           /* Error from Firecracker driver */
 # ifdef VIR_ENUM_SENTINELS
     VIR_ERR_DOMAIN_LAST
 # endif

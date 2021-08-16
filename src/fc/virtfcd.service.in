@@ -1,0 +1,31 @@
+[Unit]
+Description=Virtualization Firecracker daemon
+Conflicts=libvirtd.service
+Requires=virtfcd.socket
+Requires=virtfcd-ro.socket
+Requires=virtfcd-admin.socket
+Wants=systemd-machined.service
+Before=libvirt-guests.service
+After=network.target
+After=dbus.service
+After=apparmor.service
+After=local-fs.target
+After=remote-fs.target
+After=systemd-logind.service
+After=systemd-machined.service
+Documentation=man:libvirtd(8)
+Documentation=https://libvirt.org
+
+[Service]
+Type=notify
+EnvironmentFile=-@sysconfdir@/sysconfig/virtfcd
+ExecStart=@sbindir@/virtfcd $VIRTFCD_ARGS
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Also=virtfcd.socket
+Also=virtfcd-ro.socket
+Also=virtfcd-admin.socket

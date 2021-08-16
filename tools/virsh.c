@@ -527,6 +527,9 @@ virshShowVersion(vshControl *ctl G_GNUC_UNUSED)
 #ifdef WITH_BHYVE
     vshPrint(ctl, " Bhyve");
 #endif
+#ifdef WITH_FC
+    vshPrint(ctl, " Firecracker");
+#endif
 #ifdef WITH_TEST
     vshPrint(ctl, " Test");
 #endif

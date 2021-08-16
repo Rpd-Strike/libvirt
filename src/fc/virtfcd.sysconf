@@ -1,0 +1,3 @@
+# Customizations for the virtfcd.service systemd unit
+
+VIRTFCD_ARGS="--timeout 120"

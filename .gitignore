@@ -8,6 +8,9 @@
 .#*
 *~
 
+# vscode related ignores
+.vscode/
+
 # git related ignores
 *.rej
 *.orig

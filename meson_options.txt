@@ -59,6 +59,7 @@ option('ch_group', type: 'string', value: '', description: 'groupname to run Clo
 option('driver_network', type: 'feature', value: 'auto', description: 'virtual network driver')
 option('driver_openvz', type: 'feature', value: 'auto', description: 'OpenVZ driver')
 option('driver_qemu', type: 'feature', value: 'auto', description: 'QEMU/KVM driver')
+option('driver_fc', type: 'feature', value: 'auto', description: 'Firecracker driver')
 option('qemu_user', type: 'string', value: '', description: 'username to run QEMU system instance as')
 option('qemu_group', type: 'string', value: '', description: 'groupname to run QEMU system instance as')
 option('qemu_moddir', type: 'string', value: '', description: 'set the directory where QEMU modules are located')

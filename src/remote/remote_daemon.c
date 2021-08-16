@@ -189,6 +189,10 @@ static int daemonInitialize(void)
     if (virDriverLoadModule("vz", "vzRegister", false) < 0)
         return -1;
 # endif
+# ifdef WITH_FC
+    if (virDriverLoadModule("fc", "fcRegister", false) < 0)
+        return -1;
+# endif
 #endif
     return 0;
 }

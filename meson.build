@@ -1793,6 +1793,36 @@ if conf.has('WITH_QEMU') or conf.has('WITH_LXC') or conf.has('WITH_NETWORK')
 endif
 
 
+if not get_option('driver_fc').disabled() and host_machine.system() == 'linux' and (host_machine.cpu_family() == 'x86_64' or host_machine.cpu_family() == 'aarch64')
+  use_fc = true
+
+  if not conf.has('WITH_LIBVIRTD')
+    use_fc = false
+    if get_option('driver_fc').enabled()
+      error('libvirtd is required to build Firecracker driver')
+    endif
+  endif
+
+  if not yajl_dep.found()
+    use_fc = false
+    if get_option('driver_fc').enabled()
+      error('YAJL 2 is required to build Firecracker driver')
+    endif
+  endif
+
+  if not curl_dep.found()
+    use_fc = false
+    if get_option('driver_fc').enabled()
+      error('curl is required to build Firecracker driver')
+    endif
+  endif
+
+  if use_fc
+    conf.set('WITH_FC', 1)
+  endif
+endif
+
+
 # check for storage drivers
 
 use_storage = false
@@ -2278,6 +2308,7 @@ driver_summary = {
   'Network': conf.has('WITH_NETWORK'),
   'Libvirtd': conf.has('WITH_LIBVIRTD'),
   'Interface': conf.has('WITH_INTERFACE'),
+  'Firecracker': conf.has('WITH_FC'),
 }
 summary(driver_summary, section: 'Drivers', bool_yn: true)
 

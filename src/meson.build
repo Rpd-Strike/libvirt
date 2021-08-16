@@ -278,6 +278,7 @@ subdir('test')
 subdir('vbox')
 subdir('vmware')
 subdir('vz')
+subdir('fc')
 
 
 driver_sources = files(
