@@ -354,6 +354,41 @@ fcStartVMProcess(virFCDriver *driver G_GNUC_UNUSED,
     return ret;
 }
 
+static int
+fcConfigNetworkInterface(virFCDriver *driver G_GNUC_UNUSED,
+                           virDomainObj *vm,
+                           virDomainNetDef *net)
+{
+    virFCDomainObjPrivate *vmmPrivateData = vm->privateData;
+    char mac_address[VIR_MAC_STRING_BUFLEN];
+    int ret = -1;
+
+    if (net->type != VIR_DOMAIN_NET_TYPE_ETHERNET) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED, "%s",
+                       _("For network interfaces, only ethernet type is supported in firecracker driver"));
+        goto cleanup;
+    }
+
+    virMacAddrFormat(&net->mac, mac_address);
+
+    VIR_DEBUG("Guest ifname: %s, Host ifname: %s, mac address: %s",
+              net->ifname_guest, net->ifname, mac_address);
+
+    if (virFCMonitorSetNetwork(vmmPrivateData->socketpath, net->ifname_guest, mac_address,
+                                      net->ifname, false) < 0) {
+        virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                       _("Firecracker API Failed to set network configuration"));
+        goto cleanup;
+    }
+
+    VIR_DEBUG("End of ConfigNetInterface");
+
+    ret = 0;
+
+ cleanup:
+    return ret;
+}
+
 // Looks into the vm definition and calls the corresponding endpoints
 // to set the pre-boot parameters properly.
 // After that it starts the vm
@@ -364,6 +399,7 @@ fcConfigAndStartVM(virFCDriver *driver G_GNUC_UNUSED,
     virFCDomainObjPrivate *vmPrivateData = vm->privateData;
     virDomainDiskDef *root_device = NULL;
     g_autofree gchar *computed_cmdline = NULL;
+    size_t i = 0;
 
     // * Before starting the vm, firecracker needs to be properly configured via http requests
     computed_cmdline = fcAddAdditionalCmdlineArgs(vm);
@@ -390,6 +426,15 @@ fcConfigAndStartVM(virFCDriver *driver G_GNUC_UNUSED,
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("Firecracker API call failed setting rootfs"));
         return -1;
+    }
+
+    for (i = 0; i < vm->def->nnets; ++i) {
+        if (fcConfigNetworkInterface(driver, vm, vm->def->nets[i]) < 0) {
+            virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                           _("Failed to configure network interface"));
+            return -1;
+        }
+        VIR_DEBUG("After setting a net device");
     }
 
     if (virFCMonitorStartVM(vmPrivateData->socketpath) < 0) {
