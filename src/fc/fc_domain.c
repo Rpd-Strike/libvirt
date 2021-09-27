@@ -402,6 +402,10 @@ fcConfigAndStartVM(virFCDriver *driver G_GNUC_UNUSED,
     size_t i = 0;
 
     // * Before starting the vm, firecracker needs to be properly configured via http requests
+
+    virFCMonitorSetConfig(vmPrivateData->socketpath,
+                          true, vm->def);
+
     computed_cmdline = fcAddAdditionalCmdlineArgs(vm);
     if (virFCMonitorSetKernel(vmPrivateData->socketpath,
                               vm->def->os.kernel,
@@ -422,7 +426,7 @@ fcConfigAndStartVM(virFCDriver *driver G_GNUC_UNUSED,
     }
 
     if (virFCMonitorSetDisk(vmPrivateData->socketpath, "rootfs",
-                            root_device->src->path, true, false) < 0) {
+                            root_device->src->path, true, root_device->src->readonly) < 0) {
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("Firecracker API call failed setting rootfs"));
         return -1;

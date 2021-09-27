@@ -22,6 +22,10 @@
 
 #define URL_ROOT "http://localhost"
 
+int virFCMonitorSetConfig(const char *socketpath,
+                          bool hyper_threading,
+                          virDomainDef *vm);
+
 int
 virFCMonitorSetKernel(const char *socketpath,
                       char *kernel_path,
