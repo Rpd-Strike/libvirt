@@ -43,5 +43,12 @@ virFCMonitorShutdownVM(const char *socketpath);
 int virFCMonitorChangeState(const char *socketpath,
                             const char *state);
 
+int
+virFCMonitorSetNetwork(const char *socketpath,
+                              const char *iface_id,
+                              const char *guest_mac,
+                              const char *host_dev_name,
+                              const bool allow_mmds_requests);
+
 virDomainState
 virFCMonitorGetStatus(const char *socketpath);

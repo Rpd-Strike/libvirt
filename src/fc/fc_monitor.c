@@ -29,12 +29,13 @@
 #include "virlog.h"
 #include "virerror.h"
 
-#define VIR_FROM_THIS VIR_FROM_FC
-
 #define URL_CONFIG_KERNEL "boot-source"
-#define URL_CONFIG_ROOTFS "drives/rootfs"
+#define URL_CONFIG_DISK "drives"
+#define URL_CONFIG_NETWORK "network-interfaces"
 #define URL_ACTIONS "actions"
 #define URL_VM "vm"
+
+#define VIR_FROM_THIS VIR_FROM_FC
 
 VIR_LOG_INIT("fc.fc_monitor");
 
@@ -139,6 +140,7 @@ virFCJsonActionExec(const char *unix_path,
 
     VIR_DEBUG("JSON string: %s", jsonObjString);
     VIR_DEBUG("socket path in request: %s", unix_path);
+    VIR_DEBUG("Request URL: %s", url);
 
     curl_easy_setopt(handle, CURLOPT_UNIX_SOCKET_PATH, unix_path);
     curl_easy_setopt(handle, CURLOPT_URL, url);
@@ -182,16 +184,16 @@ virFCMonitorSetDisk(const char *socketpath,
                     const bool is_read_only)
 {
     virJSONValue_autoptr jsonObj = virJSONValueNewObject();
+    g_autofree char *url = g_strdup_printf("/%s/%s", URL_CONFIG_DISK, drive_id);
     long response_code = 0;
     int ret = -1;
 
-    // ? Drive id is taking by default value 'rootfs', is there a better solution?
     virJSONValueObjectAppendString(jsonObj, "drive_id", drive_id);
     virJSONValueObjectAppendString(jsonObj, "path_on_host", disk_path_host);
     virJSONValueObjectAppendBoolean(jsonObj, "is_root_device", is_root_device);
     virJSONValueObjectAppendBoolean(jsonObj, "is_read_only", is_read_only);
 
-    response_code = virFCJsonActionExec(socketpath, URL_CONFIG_ROOTFS, "PUT", jsonObj);
+    response_code = virFCJsonActionExec(socketpath, url, "PUT", jsonObj);
 
     if (isSuccessCode(response_code))
         ret = 0;
@@ -250,7 +252,6 @@ virFCMonitorChangeState(const char *socketpath,
         goto cleanup;
     }
 
-
     virJSONValueObjectAppendString(jsonObj, "state", state);
 
     response_code = virFCJsonActionExec(socketpath, URL_VM, "PATCH", jsonObj);
@@ -259,6 +260,31 @@ virFCMonitorChangeState(const char *socketpath,
         ret = 0;
 
  cleanup:
+    return ret;
+}
+
+int
+virFCMonitorSetNetwork(const char *socketpath,
+                              const char *iface_id,
+                              const char *guest_mac,
+                              const char *host_dev_name,
+                              const bool allow_mmds_requests)
+{
+    virJSONValue_autoptr jsonObj = virJSONValueNewObject();
+    g_autofree char *url = g_strdup_printf("/%s/%s", URL_CONFIG_NETWORK, iface_id);
+    int response_code = 0;
+    int ret = -1;
+
+    virJSONValueObjectAppendBoolean(jsonObj, "allow_mmds_requests", allow_mmds_requests);
+    virJSONValueObjectAppendString(jsonObj, "guest_mac", guest_mac);
+    virJSONValueObjectAppendString(jsonObj, "host_dev_name", host_dev_name);
+    virJSONValueObjectAppendString(jsonObj, "iface_id", iface_id);
+
+    response_code = virFCJsonActionExec(socketpath, url, "PUT", jsonObj);
+
+    if (isSuccessCode(response_code))
+        ret = 0;
+
     return ret;
 }
 
