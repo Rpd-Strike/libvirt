@@ -29,6 +29,7 @@
 #include "virlog.h"
 #include "virerror.h"
 
+#define URL_CONFIG_PREBOOT "machine-config"
 #define URL_CONFIG_KERNEL "boot-source"
 #define URL_CONFIG_DISK "drives"
 #define URL_CONFIG_NETWORK "network-interfaces"
@@ -154,6 +155,34 @@ virFCJsonActionExec(const char *unix_path,
     curl_easy_cleanup(handle);
 
     return response_code;
+}
+
+int virFCMonitorSetConfig(const char *socketpath,
+                          bool hyper_threading,
+                          virDomainDef *vmdef)
+{
+    virJSONValue_autoptr jsonObj = virJSONValueNewObject();
+    long response_code = 0;
+    int ret = -1;
+    int mem_mb = virDomainDefGetMemoryInitial(vmdef) / 1024;
+    int maxvcpus = 0;
+
+    VIR_DEBUG("Memory in mb: %d", mem_mb);
+
+    /* Currently firecracker doesn't support cpu hot plugging,
+     * so we always use the maximum amount of vcpus */
+    maxvcpus = virDomainDefGetVcpusMax(vmdef);
+
+    virJSONValueObjectAppendBoolean(jsonObj, "ht_enabled", hyper_threading);
+    virJSONValueObjectAppendNumberInt(jsonObj, "mem_size_mib", mem_mb);
+    virJSONValueObjectAppendNumberInt(jsonObj, "vcpu_count", maxvcpus);
+
+    response_code = virFCJsonActionExec(socketpath, URL_CONFIG_PREBOOT, "PUT", jsonObj);
+
+    if (isSuccessCode(response_code))
+        ret = 0;
+
+    return ret;
 }
 
 int
