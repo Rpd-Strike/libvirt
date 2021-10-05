@@ -395,6 +395,12 @@ if conf.has('WITH_LXC')
   ]
 endif
 
+if conf.has('WITH_FC')
+  tests += [
+    { 'name': 'firecrackerdrivertest', },
+  ]
+endif
+
 if conf.has('WITH_NETWORK')
   tests += [
     { 'name': 'networkxml2conftest', 'link_with': [ network_driver_impl ] },

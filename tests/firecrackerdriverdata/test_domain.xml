@@ -1,0 +1,26 @@
+<domain type='firecracker'>
+  <name>firecracker_domain</name>
+  <memory>512000</memory>
+  <currentMemory>512000</currentMemory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+    <!-- Probably will need to change this path to be consistent -->
+    <kernel>/home/ec2-user/LV/libvirt/tests/firecrackerdriverdata/hello-vmlinux-test.bin</kernel>
+    <cmdline>panic=1</cmdline>
+    <root>vda</root>
+  </os>
+  <devices>
+    <disk type='file' device='disk'>
+      <!-- Probably will need to change this path to be consistent -->
+      <source file='/home/ec2-user/LV/libvirt/tests/firecrackerdriverdata/hello-rootfs-test.ext4'/>
+      <target dev='vda' bus='virtio' />
+    </disk>
+
+    <interface type='ethernet'>
+      <target dev='tap1'/>
+      <guest dev='eth0'/>
+    </interface>
+
+  </devices>
+</domain>
