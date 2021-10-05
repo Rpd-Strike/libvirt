@@ -112,6 +112,7 @@ docs_rst_files = [
   'developer-tooling',
   'drvqemu',
   'drvch',
+  'drvfc',
   'formatbackup',
   'formatcheckpoint',
   'formatdomain',
